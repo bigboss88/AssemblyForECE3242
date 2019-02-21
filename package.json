@@ -9,6 +9,7 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
+    "tslib": "^1.9.3",
     "vue": "^2.5.22",
     "vue-class-component": "^6.0.0",
     "vue-json-pretty": "^1.4.1",

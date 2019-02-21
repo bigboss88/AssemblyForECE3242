@@ -18,15 +18,18 @@ export let programData: ProgramData = reset();
 const INSTRUCTIONS = {
   mov1: 'mov1', // RF[rn] <= mem[direct]
   mov2: 'mov2', // mem[direct] <= RF[rn]
-  save: 'mov3', // mem[RF[rn]] <= RF[rm]
-  set: 'mov4', // RF[rn] <= imm
+  mov3: 'mov3', // mem[RF[rn]] <= RF[rm]
+  mov4: 'mov4', // RF[rn] <= imm
   add: 'add', // RF[rn] <= RF[rn] + RF[rm]
   subt: 'subt', // RF[rn] <= RF[rn] - RF[rm]
   jz: 'jz', // jz if R[rn] = 0
   halt: 'halt',
   readm: 'readm', // read memory
   mul: 'mul', // RF[rn] <= RF[rn] * RF[rm]
-  load: 'load',
+  div: 'div', //RF[rn] <= RF[rn]/RF[rm]
+  inc: 'inc',//RF[rn]++
+  dec: 'dec', //RF[rn]--
+  mov5: 'mov5',// RF[rm] <= mem[RF[rn]]
   // addi: 'addi',
 };
 
@@ -75,20 +78,20 @@ const mov2 = (r1: number, direct: number) => {
   programData.memory[direct] = programData.registers[r1];
 };
 
-const save = (r1: number, r2: number) => {
+const mov3 = (r1: number, r2: number) => {
   programData.memory[programData.registers[r1]] = programData.registers[r2];
 };
 
-const set = (r1: number, imm: number) => {
+const mov4 = (r1: number, imm: number) => {
   programData.registers[r1] = imm;
 };
 
-const add = (r1: number, r2: number, r3: number) => {
-  programData.registers[r1] = programData.registers[r2] + programData.registers[r3];
+const add = (r1: number, r2: number) => {
+  programData.registers[r1] = programData.registers[r1] + programData.registers[r2];
 };
 
-const subt = (r1: number, r2: number, r3: number) => {
-  programData.registers[r1] = programData.registers[r2] - programData.registers[r3];
+const subt = (r1: number, r2: number) => {
+  programData.registers[r1] = programData.registers[r1] - programData.registers[r2];
 };
 
 const jz = (r1: number, imm: number) => {
@@ -101,44 +104,62 @@ const halt = () => {
   return true;
 };
 
-const mul = (r1: number, r2: number, r3: number) => {
-  programData.registers[r1] = programData.registers[r2] * programData.registers[r3];
+const mul = (r1: number, r2: number) => {
+  programData.registers[r1] = programData.registers[r1] * programData.registers[r2];
 };
 
-const load = (r1: number, r2: number) => {
-  programData.registers[r1] = programData.memory[programData.registers[r2]];
+const mov5 = (r1: number, r2: number) => {
+  programData.registers[r2] = programData.memory[programData.registers[r1]];
 };
 
 const readm = (imm: number) => {
   programData.out[programData.time] = programData.memory[imm];
 };
 
+const div = (r1: number, r2: number) => {
+  programData.registers[r1] = programData.registers[r1]/programData.registers[r2];
+}
+
+const inc = (r1: number)=>{
+  programData.registers[r1] = programData.registers[r1]+1;
+}
+
+const dec = (r1: number)=>{
+  programData.registers[r1] = programData.registers[r1]-1;
+}
+
 const PATTERNS: { [key in keyof typeof INSTRUCTIONS]: [ParsingData, InstructionEval] } = {
   mov1: [{ registers: 1, immediate: true }, mov1],
   mov2: [{ registers: 1, immediate: true }, mov2],
-  save: [{ registers: 2 }, save],
-  set: [{ registers: 1, immediate: true }, set],
-  add: [{ registers: 3 }, add],
-  subt: [{ registers: 3 }, subt],
+  mov3: [{ registers: 2 }, mov3],
+  mov4: [{ registers: 1, immediate: true }, mov4],
+  add: [{ registers: 2 }, add],
+  subt: [{ registers: 2 }, subt],
   jz: [{ registers: 1, immediate: true }, jz],
   halt: [{}, halt],
-  mul: [{ registers: 3 }, mul],
-  load: [{ registers: 2 }, load],
+  mul: [{ registers: 2 }, mul],
+  mov5: [{ registers: 2 }, mov5],
   readm: [{ immediate: true }, readm],
+  div: [{registers: 2}, div],
+  inc: [{registers: 1}, inc],
+  dec: [{registers: 1}, dec]
 };
 
 const INSTRUCTION_NUMBERS: { [key in keyof typeof INSTRUCTIONS]: number } = {
   mov1: 0,
   mov2: 1,
-  save: 2,
-  set: 3,
+  mov3: 2,
+  mov4: 3,
   add: 4,
   subt: 5,
   jz: 6,
   halt: 15,
-  mul: 8,
-  load: 10,
+  mul: 10,
+  mov5: 12,
   readm: 7,
+  div: 11,
+  inc:8,
+  dec:9 
 };
 
 const toHex = (decimal: number, length: number) => {
